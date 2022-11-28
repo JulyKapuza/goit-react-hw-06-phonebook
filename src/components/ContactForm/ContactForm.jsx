@@ -1,11 +1,16 @@
-import PropTypes from 'prop-types';
 import { useState } from 'react';
 import css from './ContactForm.module.css';
+import { useDispatch } from 'react-redux';
+import { addContact } from 'redux/contactSlice';
+import { useSelector } from 'react-redux';
+import { getContacts } from 'redux/selectors';
+import Notiflix from 'notiflix';
 
-export default function ContactForm({ addContact }) {
-  
+export default function ContactForm() {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
+  const contacts = useSelector(getContacts);
+  const dispatch = useDispatch();
 
   const handleChange = e => {
     const type = e.target.name;
@@ -23,7 +28,16 @@ export default function ContactForm({ addContact }) {
 
   const handleSubmit = e => {
     e.preventDefault();
-    addContact({ name, number });
+    if (
+      contacts.some(
+        contact => contact.name.toLowerCase() === name.toLowerCase()
+      )
+    ) {
+      reset();
+      return Notiflix.Notify.info(`${name} is already in contacts`);
+    }
+
+    dispatch(addContact({ name, number }));
     reset();
   };
 
@@ -66,7 +80,3 @@ export default function ContactForm({ addContact }) {
     </form>
   );
 }
-
-ContactForm.propTypes = {
-  addContact: PropTypes.func.isRequired,
-};
